@@ -182,3 +182,99 @@ NextJs는 사용자에게 html을 주기전에 server에서 application을 렌�
 간단설명
 
 > hydration은 단순 html을 React application으로 초기화하는 작업
+
+---
+
+## use client
+
+위에서 이야기 하지 않았던 점이 있는데, hydration과정은 모든 component에 대해서 발생하지 않는다.
+
+client에서 hydrate되고 interactive하게 되는 component는 오직 use client라는 지시어를 맨 위에 가지고 있는 component들 뿐이다.
+
+이것이 의미하는 바는 use client를 상단에 넣지않으면 그 컴포넌트는 hydrate가 되지 않는다. 즉, react-component가 되지 않고 html으로 남아있다.
+
+그래서, 우리가 use client를 넣는 것이다. 만약에 우리가 hydrate를 해줘야하는 페이지 use client를 안넣어줘도 알아서 에러가 뜨기에 상관없다.
+
+use client는 client에서만 일어나는 것이 아닌 server에서 render되고 front에서 hydrate가 되는 것이다. use hydrate라고 생각하면 된다.
+
+그리고 use client를 사용하지 않는 모든 컴포넌트를 server component라고 한다.
+server component는 hydrate를 하지않기 때문에 js를 적게 다운받아도 되서 유저입장에서 좋다고 볼 수 있다.
+
+여기까지가 SSR, Hydration, use client의 개념이다.
+
+---
+
+**잠깐!**
+
+지원되지 않는 패턴: 서버 컴포넌트를 클라이언트 컴포넌트로 가져오기  
+서버 컴포넌트를 클라이언트 컴포넌트로 import 할 수 없습니다.
+
+지원되는 패턴: 서버 컴포넌트를 클라이언트 컴포넌트에 props로 전달  
+서버 컴포넌트를 클라이언트 컴포넌트에 prop으로 전달할 수 있습니다.  
+일반적인 패턴은 React children prop을 사용하여 클라이언트 컴포넌트에 "slot"을 만드는 것입니다.
+
+---
+
+## Layout
+
+이번에는 NextJs의 Layout 시스템을 공부해볼 것이다.
+layout을 사용하는 이유는 우리가 app을 만들 때, 재사용 요소가 있기 때문이다.
+
+만약 about-us라는 페이지로 간다면 nextjs는 컴포넌트를 화면에 렌더링하지 않고, layout 컴포넌트에 있는 export된 디폴트 컴포넌트를 렌더링한다. 그리고 url을 확인하고 about-us를 렌더링해야된다는 것을 확인하고 렌더리을 한다.
+
+```TSX
+<Layout>
+	<AboutUs />
+</Layout>
+```
+
+나타내면 요러식으로
+
+그렇기에 그냥 layout의 children위에 Navigation 컴포넌트를 넣어주면 된다.
+
+여기까지가 layout 시스템의 전반적인 내용이였고, 이제 몇 가지 특별한 점에 대해서 알아볼 것이다.
+예를 들어 about-us 페이지를 위한 layout를 만들수도 있다.
+
+about-us 폴더안에 layout을 만들어줄 수 있다.
+만약에 about-us 폴더에 layout을 만들었는데 about-us안에 더 깊은 depth의 폴더가 있다면 그 페이지도 about-us의 layout이 중복 적용이 된다.
+
+> layout은 중첩이 되는 것이지 대체가 되는 것이 아님
+
+## Route Group
+
+route group은 routes들을 그룹화해서 다양한 것들을 할 수 있다.
+루프 레이아웃을 사용하지 않고 대신 여러 레이아웃을 사용한다던지 레이아웃을 선택하고 선택 해제하여 사용할 수 있다.
+
+사용해보기 위해서는 root에는 layout과 not-found는 전체에 적용되는 것이니 놔두고, 개별적인 존재인 page를 (home)이라는 폴더를 만들어 안에 넣어준다.
+
+route group은 폴더 이름을 괄호롤 묶어줘야한다.
+괄호로 묶어주게 되면 URL을 생성하지 않는다.
+
+이것에 대해서는 차후에 자세히 알아봐야 할 것 같다.
+
+## MetaData
+
+> Next.js에는 향상된 SEO 및 웹 공유성을 위해 애플리케이션 메타데이터(ex: HTML head 엘리먼트 내의 meta 및 link 태그)를 정의하는 데 사용할 수 있는 메타데이터 API가 있습니다.
+
+html의 head라고 생각하면 된다.
+
+page와 layout에서만 metadata를 내보낼 수 있다.
+그리고 metadata는 컴포넌트에서는 내보낼 수 없고 서버 컴포넌트에서만 있을 수 있다.
+
+metadata에는 다양한 property가 있기에 찾아볼 것
+
+## Dynamic Routes
+
+Dynamic Routes는 Static과 다르게 url의 뒤쪽이 자유롭게 바뀌는 Route이다.
+사용하기 위해서는 Movie라는 폴더가 존재한다면 Movie/\[id] 처럼 대괄호로 감싸서 만들어주면 된다.
+
+그러면 뒤에 어떤 값을 넣어도 이동하는 것을 볼 수 있다.
+
+그러면 뒤에 값을 어떻게 가져올 수 있을까?
+props를 출력해보면Params와 searchParams라는 값을 넘겨준다.
+
+react router에서 `movie/:id`처럼 쓰는것과 같다고 볼 수 있다.
+
+> 동적 세그먼트는 폴더 이름을 대괄호(\[folderName])로 묶어 생성할 수 있습니다.
+
+끝
